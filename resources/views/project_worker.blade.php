@@ -21,13 +21,12 @@
      </div>
      <br />
    <div class="table-responsive">
-    <table id="project_table" class="table table-bordered table-striped">
+    <table id="project_worker_table" class="table table-bordered table-striped">
      <thead>
       <tr>
-       <th width="15%">Project Name</th>
-                <th width="15%">Location</th>
-                <th width="25%">Area in Bigha</th>
-                <th width="25%">Company Name</th>
+       <th width="40%">Project Name</th>
+                
+                <th width="40%">Worker Name</th>
                 <th width="20%"></th>
       </tr>
      </thead>
@@ -53,34 +52,26 @@
           <div class="form-group">
             <label class="control-label col-md-4" >Project Name : </label>
             <div class="col-md-8">
-             <input type="text" name="project_name" id="project_name" class="form-control" />
+                <select name="project_id" id="project_id" class="form-control">
+                    <option value="">Select Project</option>
+                    @foreach($project as $comp)
+                    <option value="{{ $comp->id}}">{{ $comp->project_name }}</option>
+                    @endforeach
+                 </select>
             </div>
            </div>
            <div class="form-group">
-            <label class="control-label col-md-4">Location : </label>
+            <label class="control-label col-md-4">Worker Name : </label>
             <div class="col-md-8">
-             <input type="text" name="location" id="location" class="form-control" />
+                <select name="user_id" id="user_id" class="form-control">
+                    <option value="">Select Worker</option>
+                    @foreach($user as $comp)
+                    <option value="{{ $comp->id}}">{{ $comp->user_name }}</option>
+                    @endforeach
+                 </select>
             </div>
            </div>
-           <div class="form-group">
-            <label class="control-label col-md-4">Area In Bigha : </label>
-            <div class="col-md-8">
-             <input type="text" name="area_in_bigha" id="area_in_bigha" class="form-control date" />
-            
-            </div>
-           </div>
-           <div class="form-group">
-            <label class="control-label col-md-4">Company Name : </label>
-            <div class="col-md-8">
-             <select name="company_id" id="company_id" class="form-control">
-                <option value="">Select Company</option>
-                @foreach($company as $comp)
-                <option value="{{ $comp->id}}">{{ $comp->company_name }}</option>
-                @endforeach
-             </select>
-             
-            </div>
-           </div>
+
                 <br />
                 <div class="form-group" align="center">
                  <input type="hidden" name="action" id="action" value="Add" />
@@ -115,11 +106,11 @@
 <script>
 $(document).ready(function(){
 
- $('#project_table').DataTable({
+ $('#project_worker_table').DataTable({
   processing: true,
   serverSide: true,
   ajax: {
-   url: "{{ route('project.index') }}", 
+   url: "{{ route('project_worker.index') }}",
   },
   columns: [
    {
@@ -127,17 +118,10 @@ $(document).ready(function(){
     name: 'project_name'
    },
    {
-    data: 'location',
-    name: 'location'
+    data: 'user_name',
+    name: 'user_name'
    },
-   {
-    data: 'area_in_bigha',
-    name: 'area_in_bigha'
-   },
-   {
-    data: 'company_name',
-    name: 'company_name'
-   },
+   
    {
     data: 'action',
     name: 'action',
@@ -161,12 +145,12 @@ $(document).ready(function(){
 
   if($('#action').val() == 'Add')
   {
-   action_url = "{{ route('project.store') }}";
+   action_url = "{{ route('project_worker.store') }}";
   }
 
   if($('#action').val() == 'Edit')
   {
-   action_url = "{{ route('project.update') }}";
+   action_url = "{{ route('project_worker.update') }}";
   }
 
   $.ajax({
@@ -190,7 +174,7 @@ $(document).ready(function(){
     {
      html = '<div class="alert alert-success">' + data.success + '</div>';
      $('#sample_form')[0].reset();
-     $('#project_table').DataTable().ajax.reload();
+     $('#project_worker_table').DataTable().ajax.reload();
     }
     $('#form_result').html(html);
    }
@@ -201,14 +185,13 @@ $(document).ready(function(){
   var id = $(this).attr('id');
   $('#form_result').html('');
   $.ajax({
-   url :"/project/"+id+"/edit",
+   url :"/project_worker/"+id+"/edit",
    dataType:"json",
    success:function(data)
    {
-    $('#project_name').val(data.result.project_name);
-    $('#loaction').val(data.result.location);
-    $('#area_in_bigha').val(data.result.area_in_bigha);
-    $('#company_id').val(data.result.company_id);
+    $('#project_id').val(data.result.project_id);
+    $('#user_id').val(data.result.user_id);
+   
     $('#hidden_id').val(id);
     $('.modal-title').text('Edit Record');
     $('#action_button').val('Edit');
@@ -235,7 +218,7 @@ $(document).ready(function(){
    {
     setTimeout(function(){
      $('#confirmModal').modal('hide');
-     $('#project_table').DataTable().ajax.reload();
+     $('#project_worker_table').DataTable().ajax.reload();
      alert('Data Deleted');
     }, 200);
    }

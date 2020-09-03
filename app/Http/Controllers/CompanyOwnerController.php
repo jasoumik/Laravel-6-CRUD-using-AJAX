@@ -3,25 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Company;
-use App\Project;
+use App\CompanyOwner;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
-
-class ProjectController extends Controller
+class CompanyOwnerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         if($request->ajax()){
            // $company=Project::find($request->id)->company;
-            $data=Project::join('companies','companies.id','=','projects.company_id')->select('projects.*','companies.company_name')->get();
+            $data=DB::table('companies_owners')
+            ->join('companies','companies.id','=','companies_owners.company_id')
+            ->join('users','users.id','=','companies_owners.user_id')
+            ->select('companies_owners.*','users.user_name','companies.company_name')
+            ->get();
            
             return DataTables::of($data)->addIndexColumn()
             ->addColumn('action',function($data){
@@ -33,7 +32,8 @@ class ProjectController extends Controller
             ->make(true);
         }
         $company = Company::get();
-        return view('project')->with('company',$company);
+        $user=User::get();
+        return view('company_owner',compact('company','user'));
     }
 
     /**
@@ -56,10 +56,10 @@ class ProjectController extends Controller
     {
         
         $rules = array(
-            'project_name'    =>  'required',
-            'location'     =>  'required',
-            'area_in_bigha'     =>  'required',
-            //'company_id'     =>  $company,
+            'owner_type'    =>  'required',
+            'ownership_percentage'     =>  'required',
+            'user_id'     =>  'required',
+            'company_id'     =>  'required',
             
         );
        
@@ -71,13 +71,13 @@ class ProjectController extends Controller
         }
         
         $form_data = array(
-            'project_name'        =>  $request->project_name,
-            'location'         =>  $request->location,
-            'area_in_bigha'         =>  $request->area_in_bigha,
+            'owner_type'        =>  $request->owner_type,
+            'ownership_percentage'         =>  $request->ownership_percentage,
+            'user_id'         =>  $request->user_id,
             'company_id'         =>  $request->company_id,
            
         );
-        Project::create($form_data);
+        CompanyOwner::create($form_data);
         return response()->json(['success' => 'Data Added successfully.']);
     }
 
@@ -102,7 +102,7 @@ class ProjectController extends Controller
     {
         if(request()->ajax())
         {
-            $data = Project::findOrFail($id); //*
+            $data = CompanyOwner::findOrFail($id);
             return response()->json(['result' => $data]);
         }
     }
@@ -114,13 +114,13 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request)
     {
         $rules = array(
-            //'project_name'    =>  'required',
-            //'location'     =>  'required',
-            //'area_in_bigha'     =>  'required',
-            //'company_id'     =>  'required',
+            // 'owner_type'    =>  'required',
+            // 'ownership_percentage'     =>  'required',
+            // 'user_id'     =>  'required',
+            // 'company_id'     =>  'required',
             
         );
         $error = Validator::make($request->all(), $rules);
@@ -129,13 +129,13 @@ class ProjectController extends Controller
             return response()->json(['errors' => $error->errors()->all()]);
         }
         $form_data = array(
-            'project_name'        =>  $request->project_name,
-            'location'         =>  $request->location,
-            'area_in_bigha'         =>  $request->area_in_bigha,
-           'company_id'         =>  $request->company_id,
+            'owner_type'        =>  $request->owner_type,
+            'ownership_percentage'         =>  $request->ownership_percentage,
+            'user_id'         =>  $request->user_id,
+            'company_id'         =>  $request->company_id,
            
         );
-        Project::whereId($request->hidden_id)->update($form_data);
+        CompanyOwner::whereId($request->hidden_id)->update($form_data);
         return response()->json(['success' => 'Data Updated successfully.']);
     }
 
@@ -147,7 +147,7 @@ class ProjectController extends Controller
      */
     public function destroy($id)
     {
-        $data = Project::findOrFail($id);
+        $data = CompanyOwner::findOrFail($id);
         $data->delete();
     }
 }

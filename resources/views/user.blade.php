@@ -9,7 +9,7 @@
   <script src="https://cdn.datatables.net/1.10.12/js/dataTables.bootstrap.min.js"></script>  
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css" />
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-  
+ 
 </head>
  <body>
   <div class="container">    
@@ -21,13 +21,14 @@
      </div>
      <br />
    <div class="table-responsive">
-    <table id="project_table" class="table table-bordered table-striped">
+    <table id="user_table" class="table table-bordered table-striped">
      <thead>
       <tr>
-       <th width="15%">Project Name</th>
-                <th width="15%">Location</th>
-                <th width="25%">Area in Bigha</th>
-                <th width="25%">Company Name</th>
+       <th width="15%"> Name</th>
+       <th width="25%">Phone Number</th>
+                <th width="15%">Email</th>
+                <th width="25%">NID</th>
+                
                 <th width="20%"></th>
       </tr>
      </thead>
@@ -51,34 +52,28 @@
          <form method="post" id="sample_form" class="form-horizontal">
           @csrf
           <div class="form-group">
-            <label class="control-label col-md-4" >Project Name : </label>
+            <label class="control-label col-md-4" > Name : </label>
             <div class="col-md-8">
-             <input type="text" name="project_name" id="project_name" class="form-control" />
+             <input type="text" name="user_name" id="user_name" class="form-control" />
             </div>
            </div>
            <div class="form-group">
-            <label class="control-label col-md-4">Location : </label>
+            <label class="control-label col-md-4">Phone Number(+88) : </label>
             <div class="col-md-8">
-             <input type="text" name="location" id="location" class="form-control" />
+             <input type="text" name="phone_number" id="phone_number" class="form-control" />
             </div>
            </div>
            <div class="form-group">
-            <label class="control-label col-md-4">Area In Bigha : </label>
+            <label class="control-label col-md-4">Email : </label>
             <div class="col-md-8">
-             <input type="text" name="area_in_bigha" id="area_in_bigha" class="form-control date" />
-            
-            </div>
-           </div>
-           <div class="form-group">
-            <label class="control-label col-md-4">Company Name : </label>
-            <div class="col-md-8">
-             <select name="company_id" id="company_id" class="form-control">
-                <option value="">Select Company</option>
-                @foreach($company as $comp)
-                <option value="{{ $comp->id}}">{{ $comp->company_name }}</option>
-                @endforeach
-             </select>
+             <input type="text" name="email" id="email" class="form-control" />
              
+            </div>
+           </div>
+           <div class="form-group">
+            <label class="control-label col-md-4">NID : </label>
+            <div class="col-md-8">
+             <input type="text" name="nid" id="nid" class="form-control" />
             </div>
            </div>
                 <br />
@@ -115,28 +110,28 @@
 <script>
 $(document).ready(function(){
 
- $('#project_table').DataTable({
+ $('#user_table').DataTable({
   processing: true,
   serverSide: true,
   ajax: {
-   url: "{{ route('project.index') }}", 
+   url: "{{ route('user.index') }}",
   },
   columns: [
    {
-    data: 'project_name',
-    name: 'project_name'
+    data: 'user_name',
+    name: 'user_name'
    },
    {
-    data: 'location',
-    name: 'location'
+    data: 'phone_number',
+    name: 'phone_number'
    },
    {
-    data: 'area_in_bigha',
-    name: 'area_in_bigha'
+    data: 'email',
+    name: 'email'
    },
    {
-    data: 'company_name',
-    name: 'company_name'
+    data: 'nid',
+    name: 'nid'
    },
    {
     data: 'action',
@@ -161,12 +156,12 @@ $(document).ready(function(){
 
   if($('#action').val() == 'Add')
   {
-   action_url = "{{ route('project.store') }}";
+   action_url = "{{ route('user.store') }}";
   }
 
   if($('#action').val() == 'Edit')
   {
-   action_url = "{{ route('project.update') }}";
+   action_url = "{{ route('user.update') }}";
   }
 
   $.ajax({
@@ -190,7 +185,12 @@ $(document).ready(function(){
     {
      html = '<div class="alert alert-success">' + data.success + '</div>';
      $('#sample_form')[0].reset();
-     $('#project_table').DataTable().ajax.reload();
+     $('#user_table').DataTable().ajax.reload();
+     setTimeout(function(){
+     $('#confirmModal').modal('hide');
+     $('#user_table').DataTable().ajax.reload();
+     alert('New user Added');
+    }, 20);
     }
     $('#form_result').html(html);
    }
@@ -201,19 +201,20 @@ $(document).ready(function(){
   var id = $(this).attr('id');
   $('#form_result').html('');
   $.ajax({
-   url :"/project/"+id+"/edit",
+   url :"/user/"+id+"/edit",
    dataType:"json",
    success:function(data)
    {
-    $('#project_name').val(data.result.project_name);
-    $('#loaction').val(data.result.location);
-    $('#area_in_bigha').val(data.result.area_in_bigha);
-    $('#company_id').val(data.result.company_id);
+    $('#name').val(data.result.name);
+    $('#phone_number').val(data.result.phone_number);
+    $('#email').val(data.result.email);
+    $('#nid').val(data.result.nid);
     $('#hidden_id').val(id);
     $('.modal-title').text('Edit Record');
     $('#action_button').val('Edit');
     $('#action').val('Edit');
     $('#formModal').modal('show');
+    
    }
   })
  });
@@ -227,7 +228,7 @@ $(document).ready(function(){
 
  $('#ok_button').click(function(){
   $.ajax({
-   url:"project/destroy/"+user_id,
+   url:"user/destroy/"+user_id,
    beforeSend:function(){
     $('#ok_button').text('Deleting...');
    },
@@ -235,9 +236,9 @@ $(document).ready(function(){
    {
     setTimeout(function(){
      $('#confirmModal').modal('hide');
-     $('#project_table').DataTable().ajax.reload();
+     $('#user_table').DataTable().ajax.reload();
      alert('Data Deleted');
-    }, 200);
+    }, 20);
    }
   })
  });

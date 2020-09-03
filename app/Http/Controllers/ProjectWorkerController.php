@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Company;
 use App\Project;
+use App\ProjectWorker;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
-
-class ProjectController extends Controller
+class ProjectWorkerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         if($request->ajax()){
            // $company=Project::find($request->id)->company;
-            $data=Project::join('companies','companies.id','=','projects.company_id')->select('projects.*','companies.company_name')->get();
+           $data=DB::table('projects_workers')
+           ->join('projects','projects.id','=','projects_workers.project_id')
+           ->join('users','users.id','=','projects_workers.user_id')
+           ->select('projects_workers.*','projects.project_name','users.user_name')
+           ->get();
            
             return DataTables::of($data)->addIndexColumn()
             ->addColumn('action',function($data){
@@ -32,8 +31,9 @@ class ProjectController extends Controller
             ->rawColumns(['action'])
             ->make(true);
         }
-        $company = Company::get();
-        return view('project')->with('company',$company);
+        $project = Project::get();
+        $user=User::get();
+        return view('project_worker',compact('project','user'));
     }
 
     /**
@@ -56,10 +56,8 @@ class ProjectController extends Controller
     {
         
         $rules = array(
-            'project_name'    =>  'required',
-            'location'     =>  'required',
-            'area_in_bigha'     =>  'required',
-            //'company_id'     =>  $company,
+            'project_id'    =>  'required',
+            'user_id'     =>  'required',
             
         );
        
@@ -71,13 +69,11 @@ class ProjectController extends Controller
         }
         
         $form_data = array(
-            'project_name'        =>  $request->project_name,
-            'location'         =>  $request->location,
-            'area_in_bigha'         =>  $request->area_in_bigha,
-            'company_id'         =>  $request->company_id,
+            'project_id'        =>  $request->project_id,
+            'user_id'         =>  $request->user_id,
            
         );
-        Project::create($form_data);
+        ProjectWorker::create($form_data);
         return response()->json(['success' => 'Data Added successfully.']);
     }
 
@@ -102,7 +98,7 @@ class ProjectController extends Controller
     {
         if(request()->ajax())
         {
-            $data = Project::findOrFail($id); //*
+            $data = ProjectWorker::findOrFail($id);
             return response()->json(['result' => $data]);
         }
     }
@@ -114,10 +110,10 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request)
     {
         $rules = array(
-            //'project_name'    =>  'required',
+            'project_id'    =>  'required',
             //'location'     =>  'required',
             //'area_in_bigha'     =>  'required',
             //'company_id'     =>  'required',
@@ -129,13 +125,11 @@ class ProjectController extends Controller
             return response()->json(['errors' => $error->errors()->all()]);
         }
         $form_data = array(
-            'project_name'        =>  $request->project_name,
-            'location'         =>  $request->location,
-            'area_in_bigha'         =>  $request->area_in_bigha,
-           'company_id'         =>  $request->company_id,
+            'project_id'        =>  $request->project_id,
+            'user_id'         =>  $request->user_id,
            
         );
-        Project::whereId($request->hidden_id)->update($form_data);
+        ProjectWorker::whereId($request->hidden_id)->update($form_data);
         return response()->json(['success' => 'Data Updated successfully.']);
     }
 
@@ -147,7 +141,7 @@ class ProjectController extends Controller
      */
     public function destroy($id)
     {
-        $data = Project::findOrFail($id);
+        $data = ProjectWorker::findOrFail($id);
         $data->delete();
     }
 }

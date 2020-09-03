@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
+    protected $table='projects';
     protected $fillable=['project_name','location','area_in_bigha',
     'company_id'];
     public function company(){

@@ -2,26 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Company;
-use App\Project;
+use App\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
-
-class ProjectController extends Controller
+class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
         if($request->ajax()){
            // $company=Project::find($request->id)->company;
-            $data=Project::join('companies','companies.id','=','projects.company_id')->select('projects.*','companies.company_name')->get();
+            $data=User::latest()->get();
            
             return DataTables::of($data)->addIndexColumn()
             ->addColumn('action',function($data){
@@ -32,8 +24,8 @@ class ProjectController extends Controller
             ->rawColumns(['action'])
             ->make(true);
         }
-        $company = Company::get();
-        return view('project')->with('company',$company);
+       // $company = Company::get();
+        return view('user');
     }
 
     /**
@@ -56,10 +48,11 @@ class ProjectController extends Controller
     {
         
         $rules = array(
-            'project_name'    =>  'required',
-            'location'     =>  'required',
-            'area_in_bigha'     =>  'required',
-            //'company_id'     =>  $company,
+            'user_name'    =>  'required',
+            'phone_number'     =>  'required|max:11',
+            'email'     =>  'required|email',
+            'nid'     =>  'required|max:10',
+            
             
         );
        
@@ -71,13 +64,13 @@ class ProjectController extends Controller
         }
         
         $form_data = array(
-            'project_name'        =>  $request->project_name,
-            'location'         =>  $request->location,
-            'area_in_bigha'         =>  $request->area_in_bigha,
-            'company_id'         =>  $request->company_id,
+            'user_name'        =>  $request->user_name,
+            'phone_number'         =>  $request->phone_number,
+            'email'         =>  $request->email,
+            'nid'         =>  $request->nid,
            
         );
-        Project::create($form_data);
+        User::create($form_data);
         return response()->json(['success' => 'Data Added successfully.']);
     }
 
@@ -102,7 +95,7 @@ class ProjectController extends Controller
     {
         if(request()->ajax())
         {
-            $data = Project::findOrFail($id); //*
+            $data = User::findOrFail($id);
             return response()->json(['result' => $data]);
         }
     }
@@ -114,13 +107,14 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Project $project)
+    public function update(Request $request)
     {
         $rules = array(
-            //'project_name'    =>  'required',
-            //'location'     =>  'required',
-            //'area_in_bigha'     =>  'required',
-            //'company_id'     =>  'required',
+            //'user_name'    =>  'required',
+            //'phone_number'     =>  'required|max:11',
+            //'email'     =>  'required|email',
+            //'nid'     =>  'required',
+            
             
         );
         $error = Validator::make($request->all(), $rules);
@@ -129,13 +123,13 @@ class ProjectController extends Controller
             return response()->json(['errors' => $error->errors()->all()]);
         }
         $form_data = array(
-            'project_name'        =>  $request->project_name,
-            'location'         =>  $request->location,
-            'area_in_bigha'         =>  $request->area_in_bigha,
-           'company_id'         =>  $request->company_id,
+            'user_name'        =>  $request->user_name,
+            'phone_number'         =>  $request->phone_number,
+            'email'         =>  $request->email,
+            'nid'         =>  $request->nid,
            
         );
-        Project::whereId($request->hidden_id)->update($form_data);
+        User::whereId($request->hidden_id)->update($form_data);
         return response()->json(['success' => 'Data Updated successfully.']);
     }
 
@@ -147,7 +141,7 @@ class ProjectController extends Controller
      */
     public function destroy($id)
     {
-        $data = Project::findOrFail($id);
+        $data = User::findOrFail($id);
         $data->delete();
     }
 }
